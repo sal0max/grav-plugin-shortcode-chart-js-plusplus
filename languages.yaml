@@ -1,0 +1,15 @@
+en:
+  PLUGIN_CHART_JS_SHORTCODE_PLUSPLUS:
+    CHART_DEFAULTS: 'Default colors'
+
+    DEFAULT_BACKGROUND_COLOR: 'Default background color'
+    DEFAULT_BACKGROUND_COLOR_HELP: 'Can be any valid HTML5 color string, e.g. "red" or "#ff0000" or "rgb(255,0,0)" or "rgba(255,0,0, 0.5)"'
+
+    DEFAULT_BORDER_COLOR: 'Default border color'
+    DEFAULT_BORDER_COLOR_HELP: 'Can be any valid HTML5 color string, e.g. "red" or "#ff0000" or "rgb(255,0,0)" or "rgba(255,0,0, 0.5)"'
+
+    DEFAULT_POINT_BACKGROUND_COLOR: 'Default point background color'
+    DEFAULT_POINT_BACKGROUND_COLOR_HELP: 'Can be any valid HTML5 color string, e.g. "red" or "#ff0000" or "rgb(255,0,0)" or "rgba(255,0,0, 0.5)"'
+
+    DEFAULT_POINT_BORDER_COLOR: 'Default point border color'
+    DEFAULT_POINT_BORDER_COLOR_HELP: 'Can be any valid HTML5 color string, e.g. "red" or "#ff0000" or "rgb(255,0,0)" or "rgba(255,0,0, 0.5)"'

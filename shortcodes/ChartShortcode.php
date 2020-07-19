@@ -1,0 +1,200 @@
+<?php
+
+namespace Grav\Plugin\Shortcodes;
+
+use Thunder\Shortcode\Shortcode\ShortcodeInterface;
+
+class ChartShortcode extends Shortcode
+{
+    // id to connect javascript with canvas
+    private $canvasId;
+    // default colors
+    private $backgroundColor;      // line fill / bar fill
+    private $borderColor;          // line color / bar border
+    private $pointBackgroundColor; // points fill
+    private $pointBorderColor;     // points border
+
+    /*
+     *
+     */
+    public function init()
+    {
+        // chart
+        $this->shortcode->getHandlers()->add('chart', function(ShortcodeInterface $sc) {
+            // get plugin settings
+            $this->pluginConfig         = $this->config->get('plugins.shortcode-chart-js-plusplus');
+            $this->backgroundColor      = $this->pluginConfig['chart']['backgroundColor'];
+            $this->borderColor          = $this->pluginConfig['chart']['borderColor'];
+            $this->pointBackgroundColor = $this->pluginConfig['chart']['pointBackgroundColor'];
+            $this->pointBorderColor     = $this->pluginConfig['chart']['pointBorderColor'];
+
+            // 
+            $output  = $this->buildCanvas($sc);
+            $output .= $this->buildJS($sc);
+            return $output;
+        });
+
+        // dataset
+        $this->shortcode->getHandlers()->add('canvas', function(ShortcodeInterface $sc) {
+            $this->shortcode->setStates('canvas', $sc);
+            return '';
+        });
+
+        // dataset
+        $this->shortcode->getHandlers()->add('dataset', function(ShortcodeInterface $sc) {
+            $this->shortcode->setStates('dataset', $sc);
+            return '';
+        });
+
+        // options
+        $this->shortcode->getHandlers()->add('options', function(ShortcodeInterface $sc) {
+            $this->shortcode->setStates('options', $sc);
+            return '';
+        });
+    }
+
+
+    /*
+     *
+     */
+    private function buildCanvas($sc) : string
+    {
+        $canvas = $this->shortcode->getStates('canvas');
+        // Canvas details
+        if (!empty($canvas)) {
+            $this->canvasId = $canvas[0]->getParameter('id', 'canvas');
+            $width          = $canvas[0]->getParameter('width');
+            $height         = $canvas[0]->getParameter('height');
+            return "<canvas id=\"$this->canvasId\" width=\"$width\" height=\"$height\"></canvas>\n";
+        } else {
+            $this->canvasId = 'canvas';
+            return "<canvas id=\"$this->canvasId\"></canvas>\n";
+        }
+    }
+
+
+    /*
+     *
+     */
+    private function buildJS($sc) : string
+    {
+        $output = "<script>";
+
+        /*
+         * add assets
+         */
+        $this->shortcode->addAssets('js',  '//cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js');
+        $this->shortcode->addAssets('css', '//cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.css');
+
+        /*
+         * BEGINN JS BLOCK
+         */
+        $output .= "var ctx = document.getElementById('{$this->canvasId}');\n";
+        $output .= "var aChart = new Chart(ctx, {\n";
+
+        /*
+         * type
+         */
+        $output .= "type: '{$sc->getParameter('type')}',\n";
+
+        /*
+         * data
+         */
+        $output .= "data: {\n";
+        $output .= $this->shortcodeOptionsToJsValues($sc->getParameters());
+
+        /*
+         * datasets
+         */
+        $datasets = $this->shortcode->getStates('dataset');
+        $output .= "datasets: [";
+        if (!empty($datasets)) {
+            foreach ($datasets as $dataset) {
+                // go on
+                $output .= "{\n";
+                $output .= $this->shortcodeOptionsToJsValues($dataset->getParameters());
+                // fill in default values, if needed
+                if ($dataset->getParameter('backgroundColor') === null)
+                    $output .= "backgroundColor: '$this->backgroundColor',\n";
+                if ($dataset->getParameter('borderColor') === null)
+                    $output .= "borderColor: '$this->borderColor',\n";
+                if ($dataset->getParameter('pointBackgroundColor') === null)
+                    $output .= "pointBackgroundColor: '$this->pointBackgroundColor',\n";
+                if ($dataset->getParameter('pointBorderColor') === null)
+                    $output .= "pointBorderColor: '$this->pointBorderColor',\n";
+                $output .= "}, ";
+            }
+        }
+        $output .= "]\n";
+        $output .= "},\n";
+
+        /*
+         * options
+         */
+        $options = $this->shortcode->getStates('options');
+        if (!empty($options)) {
+            $output .= "options: {\n";
+            $output .= $this->shortcodeOptionsToJsValues($options[0]->getParameters());
+            $output .= "}\n";
+        }
+
+        $output .= '});';
+
+        /*
+         * END JS BLOCK
+         */
+        $output .= "</script>";
+
+        return $output;
+    }
+
+
+    /*
+     * 
+     */
+    private function shortcodeOptionsToJsValues($values) : string
+    {
+        $result = '';
+        foreach ($values as $key => $value) {
+            // arrays
+            if ($this->startsWith($value, '[')) {
+                $value = substr($value, 1, strlen($value) - 2);
+                $result .= "$key: {$this->convertArrayToJsRepresentation(explode(',', $value))},\n";
+            }
+            // booleans
+            else if ($value === "true" || $value === "false") {
+                $result .= "$key: $value,\n";
+            }
+            // strings
+            else {
+                $result .= "$key: '$value',\n";
+            }
+        }
+        return $result;
+    }
+
+
+    /*
+     *
+     */
+    private function convertArrayToJsRepresentation($values) : string
+    {
+        if (count($values) > 0) {
+            $jsStringLiteralArray = "['" . implode("','", $values) . "']";
+        } else {
+            $jsStringLiteralArray = "[]";
+        }
+        return $jsStringLiteralArray;
+    }
+
+
+    /*
+     *
+     */
+    private function startsWith( $haystack, $needle ) : bool
+    {
+        $length = strlen( $needle );
+        return substr( $haystack, 0, $length ) === $needle;
+    }
+
+}
