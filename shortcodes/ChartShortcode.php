@@ -36,19 +36,22 @@ class ChartShortcode extends Shortcode
 
         // dataset
         $this->shortcode->getHandlers()->add('canvas', function(ShortcodeInterface $sc) {
-            $this->shortcode->setStates('canvas', $sc);
+            $hash = $this->shortcode->getId($sc->getParent());
+            $this->shortcode->setStates("canvas-$hash", $sc);
             return '';
         });
 
         // dataset
         $this->shortcode->getHandlers()->add('dataset', function(ShortcodeInterface $sc) {
-            $this->shortcode->setStates('dataset', $sc);
+            $hash = $this->shortcode->getId($sc->getParent());
+            $this->shortcode->setStates("dataset-$hash", $sc);
             return '';
         });
 
         // options
         $this->shortcode->getHandlers()->add('options', function(ShortcodeInterface $sc) {
-            $this->shortcode->setStates('options', $sc);
+            $hash = $this->shortcode->getId($sc->getParent());
+            $this->shortcode->setStates("options-$hash", $sc);
             return '';
         });
     }
@@ -59,12 +62,13 @@ class ChartShortcode extends Shortcode
      */
     private function buildCanvas($sc) : string
     {
-        $canvas = $this->shortcode->getStates('canvas');
+        $hash   = $this->shortcode->getId($sc);
+        $canvas = $this->shortcode->getStates("canvas-$hash");
         // Canvas details
         if (!empty($canvas)) {
-            $this->canvasId = $canvas[0]->getParameter('id', 'canvas');
-            $width          = $canvas[0]->getParameter('width');
-            $height         = $canvas[0]->getParameter('height');
+            $this->canvasId = end($canvas)->getParameter('id', "canvas-$hash");
+            $width          = end($canvas)->getParameter('width');
+            $height         = end($canvas)->getParameter('height');
             return "<canvas id=\"$this->canvasId\" width=\"$width\" height=\"$height\"></canvas>\n";
         } else {
             $this->canvasId = 'canvas';
@@ -78,6 +82,7 @@ class ChartShortcode extends Shortcode
      */
     private function buildJS($sc) : string
     {
+        $hash   = $this->shortcode->getId($sc);
         $output = "<script>";
 
         /*
@@ -106,7 +111,7 @@ class ChartShortcode extends Shortcode
         /*
          * datasets
          */
-        $datasets = $this->shortcode->getStates('dataset');
+        $datasets = $this->shortcode->getStates("dataset-$hash");
         $output .= "datasets: [";
         if (!empty($datasets)) {
             foreach ($datasets as $dataset) {
@@ -131,7 +136,7 @@ class ChartShortcode extends Shortcode
         /*
          * options
          */
-        $options = $this->shortcode->getStates('options');
+        $options = $this->shortcode->getStates("options-$hash");
         if (!empty($options)) {
             $output .= "options: {\n";
             $output .= $this->shortcodeOptionsToJsValues($options[0]->getParameters());
