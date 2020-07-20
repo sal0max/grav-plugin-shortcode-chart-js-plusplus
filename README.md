@@ -38,7 +38,7 @@ Have a look at the following examples.
 
 ### Bar Chart
 
-![](images/bar.png)
+![](assets/bar.png)
 
 ```
 [chart
@@ -62,7 +62,7 @@ Have a look at the following examples.
 
 ### Doughnut
 
-![](images/doughnut.png)
+![](assets/doughnut.png)
 
 ```
 [chart
@@ -82,7 +82,7 @@ Have a look at the following examples.
 
 ### Line Chart
 
-![](images/line_chart.png)
+![](assets/line_chart.png)
 
 ```
 [chart
@@ -115,7 +115,7 @@ Have a look at the following examples.
 
 ### Radar
 
-![](images/radar.png)
+![](assets/radar.png)
 
 ```
 [chart
