@@ -88,8 +88,8 @@ class ChartShortcode extends Shortcode
         /*
          * add assets
          */
-        $this->shortcode->addAssets('js',  '//cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js');
-        $this->shortcode->addAssets('css', '//cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.css');
+        $this->shortcode->addAssets('js',  'plugin://shortcode-chart-js-plusplus/vendor/chartjs/2.9.3/Chart.min.js');
+        $this->shortcode->addAssets('css', 'plugin://shortcode-chart-js-plusplus/vendor/chartjs/2.9.3/Chart.min.css');
 
         /*
          * BEGINN JS BLOCK
