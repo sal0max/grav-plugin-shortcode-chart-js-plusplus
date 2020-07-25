@@ -15,6 +15,7 @@ docs: https://github.com/sal0max/grav-plugin-shortcode-chart-js-plusplus/blob/de
 license: MIT
 
 dependencies:
+  - { name: grav, version: '>=1.6.0' }
   - shortcode-core
 
 form:
