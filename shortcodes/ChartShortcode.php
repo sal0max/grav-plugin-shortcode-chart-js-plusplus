@@ -22,11 +22,11 @@ class ChartShortcode extends Shortcode
         // chart
         $this->shortcode->getHandlers()->add('chart', function(ShortcodeInterface $sc) {
             // get plugin settings
-            $this->pluginConfig         = $this->config->get('plugins.shortcode-chart-js-plusplus');
-            $this->backgroundColor      = $this->pluginConfig['chart']['backgroundColor'];
-            $this->borderColor          = $this->pluginConfig['chart']['borderColor'];
-            $this->pointBackgroundColor = $this->pluginConfig['chart']['pointBackgroundColor'];
-            $this->pointBorderColor     = $this->pluginConfig['chart']['pointBorderColor'];
+            $pluginConfig               = $this->config->get('plugins.shortcode-chart-js-plusplus');
+            $this->backgroundColor      = $pluginConfig['chart']['backgroundColor'];
+            $this->borderColor          = $pluginConfig['chart']['borderColor'];
+            $this->pointBackgroundColor = $pluginConfig['chart']['pointBackgroundColor'];
+            $this->pointBorderColor     = $pluginConfig['chart']['pointBorderColor'];
 
             // 
             $output  = $this->buildCanvas($sc);
