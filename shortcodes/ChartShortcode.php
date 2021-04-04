@@ -28,7 +28,7 @@ class ChartShortcode extends Shortcode
             $this->pointBackgroundColor = $pluginConfig['chart']['pointBackgroundColor'];
             $this->pointBorderColor     = $pluginConfig['chart']['pointBorderColor'];
 
-            // 
+            //
             $output  = $this->buildCanvas($sc);
             $output .= $this->buildJS($sc);
             return $output;
@@ -88,8 +88,7 @@ class ChartShortcode extends Shortcode
         /*
          * add assets
          */
-        $this->shortcode->addAssets('js',  'plugin://shortcode-chart-js-plusplus/vendor/chartjs/2.9.4/Chart.min.js');
-        $this->shortcode->addAssets('css', 'plugin://shortcode-chart-js-plusplus/vendor/chartjs/2.9.4/Chart.min.css');
+        $this->shortcode->addAssets('js',  'plugin://shortcode-chart-js-plusplus/vendor/chartjs/3.0.2/Chart.min.js');
 
         /*
          * BEGINN JS BLOCK
@@ -155,7 +154,7 @@ class ChartShortcode extends Shortcode
 
 
     /*
-     * 
+     *
      */
     private function shortcodeOptionsToJsValues($values) : string
     {
