@@ -1,8 +1,8 @@
 <?php
+
 namespace Grav\Plugin;
 
 use Grav\Common\Plugin;
-use RocketTheme\Toolbox\Event\Event;
 
 /**
  * Class ShortcodeChartjsPlugin
@@ -20,17 +20,15 @@ class ShortcodeChartJsPlusPlusPlugin extends Plugin
      *     callable (or function) as well as the priority. The
      *     higher the number the higher the priority.
      */
-    public static function getSubscribedEvents()
+    public static function getSubscribedEvents(): array
     {
-        return [ 'onShortcodeHandlers' => ['onShortcodeHandlers', 0] ];
+        return ['onShortcodeHandlers' => ['onShortcodeHandlers', 0]];
     }
 
     /**
      * Initialize configuration
-     *
-     * @param Event $e
      */
-    public function onShortcodeHandlers(Event $e)
+    public function onShortcodeHandlers()
     {
         $this->grav['shortcode']->registerAllShortcodes(__DIR__ . '/shortcodes');
     }

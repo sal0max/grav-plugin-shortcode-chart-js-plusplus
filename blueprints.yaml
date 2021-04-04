@@ -8,10 +8,10 @@ author:
   name: Maximilian Salomon
   email: msal.coding@gmail.com
 homepage: https://github.com/sal0max/grav-plugin-shortcode-chart-js-plusplus
-demo: 
+demo:
 keywords: grav, plugin, shortcode, chart, graph, chart.js
 bugs: https://github.com/sal0max/grav-plugin-shortcode-chart-js-plusplus/issues
-docs: https://github.com/sal0max/grav-plugin-shortcode-chart-js-plusplus/blob/develop/README.md
+docs: https://github.com/sal0max/grav-plugin-shortcode-chart-js-plusplus/blob/master/README.md
 license: MIT
 
 dependencies:
