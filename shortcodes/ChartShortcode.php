@@ -88,7 +88,7 @@ class ChartShortcode extends Shortcode
         /*
          * add assets
          */
-        $this->shortcode->addAssets('js',  'plugin://shortcode-chart-js-plusplus/vendor/chartjs/3.2.0/Chart.min.js');
+        $this->shortcode->addAssets('js',  'plugin://shortcode-chart-js-plusplus/vendor/chartjs/chart.min.js');
 
         /*
          * BEGINN JS BLOCK
