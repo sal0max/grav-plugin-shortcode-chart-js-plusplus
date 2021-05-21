@@ -1,6 +1,6 @@
 enabled: true
 chart:
-  backgroundColor: '#65a0e999'
+  backgroundColor: '#65a0e9'
   borderColor: '#65a0e9'
   pointBackgroundColor: '#65a0e9'
   pointBorderColor: '#65a0e9'
