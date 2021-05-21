@@ -29,7 +29,7 @@ class ChartShortcode extends Shortcode
             $this->pointBorderColor     = $pluginConfig['chart']['pointBorderColor'];
 
             //
-            $output  = $this->buildCanvas($sc);
+            $output  = $this->buildCanvas();
             $output .= $this->buildJS($sc);
             return $output;
         });
@@ -60,9 +60,9 @@ class ChartShortcode extends Shortcode
     /*
      *
      */
-    private function buildCanvas($sc) : string
+    private function buildCanvas() : string
     {
-        $hash   = $this->shortcode->getId($sc);
+        $hash=base64_encode(openssl_random_pseudo_bytes(16));
         $canvas = $this->shortcode->getStates("canvas-$hash");
         // Canvas details
         if (!empty($canvas)) {
@@ -71,7 +71,7 @@ class ChartShortcode extends Shortcode
             $height         = end($canvas)->getParameter('height');
             return "<canvas id=\"$this->canvasId\" width=\"$width\" height=\"$height\"></canvas>\n";
         } else {
-            $this->canvasId = 'canvas';
+            $this->canvasId = "canvas-$hash";
             return "<canvas id=\"$this->canvasId\"></canvas>\n";
         }
     }
@@ -93,7 +93,7 @@ class ChartShortcode extends Shortcode
         /*
          * BEGINN JS BLOCK
          */
-        $output .= "var ctx = document.getElementById('{$this->canvasId}');\n";
+        $output .= "var ctx = document.getElementById('$this->canvasId');\n";
         $output .= "var aChart = new Chart(ctx, {\n";
 
         /*
