@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpUnused */
 
 namespace Grav\Plugin\Shortcodes;
 
@@ -34,7 +34,7 @@ class ChartShortcode extends Shortcode
             return $output;
         });
 
-        // dataset
+        // canvas
         $this->shortcode->getHandlers()->add('canvas', function(ShortcodeInterface $sc) {
             $hash = $this->shortcode->getId($sc->getParent());
             $this->shortcode->setStates("canvas-$hash", $sc);
@@ -195,7 +195,8 @@ class ChartShortcode extends Shortcode
     /*
      *
      */
-    private function startsWith( $haystack, $needle ) : bool
+    /** @noinspection PhpSameParameterValueInspection */
+    private function startsWith($haystack, $needle) : bool
     {
         $length = strlen( $needle );
         return substr( $haystack, 0, $length ) === $needle;
