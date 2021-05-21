@@ -1,3 +1,10 @@
+# v1.0.7
+##  05/21/2021
+
+1. [](#bugfix)
+   * multi-dimensional arrays now working properly
+   * make canvasId unique
+
 # v1.0.6
 ##  05/03/2021
 
