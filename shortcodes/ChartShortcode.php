@@ -162,8 +162,15 @@ class ChartShortcode extends Shortcode
         foreach ($values as $key => $value) {
             // arrays
             if ($this->startsWith($value, '[')) {
-                $value = substr($value, 1, strlen($value) - 2);
-                $result .= "$key: {$this->convertArrayToJsRepresentation(explode(',', $value))},\n";
+                $value = str_replace('[', "['", $value);
+                $value = str_replace(']', "']", $value);
+                $value = str_replace(',', "', '", $value);
+                $value = str_replace("['[", "[[", $value);
+                $value = str_replace("]']", "]]", $value);
+                $value = str_replace("]', ' [", "], [", $value);
+                $result .= "$key: $value,\n";
+                #$value = substr($value, 1, strlen($value) - 2);
+                #$result .= "$key: {$this->convertArrayToJsRepresentation(explode(',', $value))},\n";
             }
             // booleans
             else if ($value === "true" || $value === "false") {
