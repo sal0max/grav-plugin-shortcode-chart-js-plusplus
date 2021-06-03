@@ -1,5 +1,5 @@
 /*!
- * Chart.js v3.3.0
+ * Chart.js v3.3.2
  * https://www.chartjs.org
  * (c) 2021 Chart.js Contributors
  * Released under the MIT License
@@ -1792,6 +1792,9 @@ function getNearestItems(chart, position, axis, intersect, useFinalPosition) {
       return;
     }
     const center = element.getCenterPoint(useFinalPosition);
+    if (!_isPointInArea(center, chart.chartArea, chart._minPadding)) {
+      return;
+    }
     const distance = distanceMetric(position, center);
     if (distance < minDistance) {
       items = [{element, datasetIndex, index}];
@@ -3047,13 +3050,17 @@ function createDataContext(parent, index, element) {
   });
 }
 function clearStacks(meta, items) {
+  const axis = meta.vScale && meta.vScale.axis;
+  if (!axis) {
+    return;
+  }
   items = items || meta._parsed;
   for (const parsed of items) {
     const stacks = parsed._stacks;
-    if (!stacks || stacks[meta.vScale.id] === undefined || stacks[meta.vScale.id][meta.index] === undefined) {
+    if (!stacks || stacks[axis] === undefined || stacks[axis][meta.index] === undefined) {
       return;
     }
-    delete stacks[meta.vScale.id][meta.index];
+    delete stacks[axis][meta.index];
   }
 }
 const isDirectUpdateMode = (mode) => mode === 'reset' || mode === 'none';
@@ -3536,13 +3543,13 @@ class DatasetController {
     const numMeta = elements.length;
     const numData = data.length;
     const count = Math.min(numData, numMeta);
+    if (count) {
+      me.parse(0, count);
+    }
     if (numData > numMeta) {
       me._insertElements(numMeta, numData - numMeta, resetNewElements);
     } else if (numData < numMeta) {
       me._removeElements(numData, numMeta - numData);
-    }
-    if (count) {
-      me.parse(0, count);
     }
   }
   _insertElements(start, count, resetNewElements = true) {
@@ -6392,7 +6399,7 @@ function needContext(proxy, names) {
   return false;
 }
 
-var version = "3.3.0";
+var version = "3.3.2";
 
 const KNOWN_POSITIONS = ['top', 'bottom', 'left', 'right', 'chartArea'];
 function positionIsHorizontal(position, axis) {
@@ -6636,20 +6643,12 @@ class Chart {
       layouts.addBox(me, scale);
     });
   }
-  _updateMetasetIndex(meta, index) {
-    const metasets = this._metasets;
-    const oldIndex = meta.index;
-    if (oldIndex !== index) {
-      metasets[oldIndex] = metasets[index];
-      metasets[index] = meta;
-      meta.index = index;
-    }
-  }
   _updateMetasets() {
     const me = this;
     const metasets = me._metasets;
     const numData = me.data.datasets.length;
     const numMeta = metasets.length;
+    metasets.sort((a, b) => a.index - b.index);
     if (numMeta > numData) {
       for (let i = numData; i < numMeta; ++i) {
         me._destroyDatasetMeta(i);
@@ -6687,7 +6686,7 @@ class Chart {
       meta.type = type;
       meta.indexAxis = dataset.indexAxis || getIndexAxis(type, me.options);
       meta.order = dataset.order || 0;
-      me._updateMetasetIndex(meta, i);
+      meta.index = i;
       meta.label = '' + dataset.label;
       meta.visible = me.isDatasetVisible(i);
       if (meta.controller) {
@@ -6910,7 +6909,7 @@ class Chart {
     const metasets = me._metasets;
     let meta = metasets.filter(x => x && x._dataset === dataset).pop();
     if (!meta) {
-      meta = metasets[datasetIndex] = {
+      meta = {
         type: null,
         data: [],
         dataset: null,
@@ -6924,6 +6923,7 @@ class Chart {
         _parsed: [],
         _sorted: false
       };
+      metasets.push(meta);
     }
     return meta;
   }
@@ -8506,8 +8506,8 @@ RadarController: RadarController,
 ScatterController: ScatterController
 });
 
-function clipArc(ctx, element) {
-  const {startAngle, endAngle, pixelMargin, x, y, outerRadius, innerRadius} = element;
+function clipArc(ctx, element, endAngle) {
+  const {startAngle, pixelMargin, x, y, outerRadius, innerRadius} = element;
   let angleMargin = pixelMargin / outerRadius;
   ctx.beginPath();
   ctx.arc(x, y, outerRadius, startAngle - angleMargin, endAngle + angleMargin);
@@ -8544,8 +8544,8 @@ function rThetaToXY(r, theta, x, y) {
     y: y + r * Math.sin(theta),
   };
 }
-function pathArc(ctx, element, offset) {
-  const {x, y, startAngle: start, endAngle: end, pixelMargin, innerRadius: innerR} = element;
+function pathArc(ctx, element, offset, end) {
+  const {x, y, startAngle: start, pixelMargin, innerRadius: innerR} = element;
   const outerRadius = Math.max(element.outerRadius + offset - pixelMargin, 0);
   const innerRadius = innerR > 0 ? innerR + offset + pixelMargin : 0;
   const alpha = end - start;
@@ -8588,45 +8588,44 @@ function pathArc(ctx, element, offset) {
   ctx.closePath();
 }
 function drawArc(ctx, element, offset) {
-  if (element.fullCircles) {
-    element.endAngle = element.startAngle + TAU;
-    pathArc(ctx, element, offset);
-    for (let i = 0; i < element.fullCircles; ++i) {
+  const {fullCircles, startAngle, circumference} = element;
+  let endAngle = element.endAngle;
+  if (fullCircles) {
+    pathArc(ctx, element, offset, startAngle + TAU);
+    for (let i = 0; i < fullCircles; ++i) {
       ctx.fill();
     }
+    if (!isNaN(circumference)) {
+      endAngle = startAngle + circumference % TAU;
+      if (circumference % TAU === 0) {
+        endAngle += TAU;
+      }
+    }
   }
-  if (!isNaN(element.circumference)) {
-    element.endAngle = element.startAngle + element.circumference % TAU;
-  }
-  pathArc(ctx, element, offset);
+  pathArc(ctx, element, offset, endAngle);
   ctx.fill();
+  return endAngle;
 }
 function drawFullCircleBorders(ctx, element, inner) {
-  const {x, y, startAngle, endAngle, pixelMargin} = element;
+  const {x, y, startAngle, pixelMargin, fullCircles} = element;
   const outerRadius = Math.max(element.outerRadius - pixelMargin, 0);
   const innerRadius = element.innerRadius + pixelMargin;
   let i;
   if (inner) {
-    element.endAngle = element.startAngle + TAU;
-    clipArc(ctx, element);
-    element.endAngle = endAngle;
-    if (element.endAngle === element.startAngle) {
-      element.endAngle += TAU;
-      element.fullCircles--;
-    }
+    clipArc(ctx, element, startAngle + TAU);
   }
   ctx.beginPath();
   ctx.arc(x, y, innerRadius, startAngle + TAU, startAngle, true);
-  for (i = 0; i < element.fullCircles; ++i) {
+  for (i = 0; i < fullCircles; ++i) {
     ctx.stroke();
   }
   ctx.beginPath();
   ctx.arc(x, y, outerRadius, startAngle, startAngle + TAU);
-  for (i = 0; i < element.fullCircles; ++i) {
+  for (i = 0; i < fullCircles; ++i) {
     ctx.stroke();
   }
 }
-function drawBorder(ctx, element, offset) {
+function drawBorder(ctx, element, offset, endAngle) {
   const {options} = element;
   const inner = options.borderAlign === 'inner';
   if (!options.borderWidth) {
@@ -8643,9 +8642,9 @@ function drawBorder(ctx, element, offset) {
     drawFullCircleBorders(ctx, element, inner);
   }
   if (inner) {
-    clipArc(ctx, element);
+    clipArc(ctx, element, endAngle);
   }
-  pathArc(ctx, element, offset);
+  pathArc(ctx, element, offset, endAngle);
   ctx.stroke();
 }
 class ArcElement extends Element {
@@ -8684,7 +8683,8 @@ class ArcElement extends Element {
       'startAngle',
       'endAngle',
       'innerRadius',
-      'outerRadius'
+      'outerRadius',
+      'circumference'
     ], useFinalPosition);
     const halfAngle = (startAngle + endAngle) / 2;
     const halfRadius = (innerRadius + outerRadius) / 2;
@@ -8698,11 +8698,11 @@ class ArcElement extends Element {
   }
   draw(ctx) {
     const me = this;
-    const options = me.options;
+    const {options, circumference} = me;
     const offset = (options.offset || 0) / 2;
     me.pixelMargin = (options.borderAlign === 'inner') ? 0.33 : 0;
-    me.fullCircles = Math.floor(me.circumference / TAU);
-    if (me.circumference === 0 || me.innerRadius < 0 || me.outerRadius < 0) {
+    me.fullCircles = circumference > TAU ? Math.floor(circumference / TAU) : 0;
+    if (circumference === 0 || me.innerRadius < 0 || me.outerRadius < 0) {
       return;
     }
     ctx.save();
@@ -8717,8 +8717,8 @@ class ArcElement extends Element {
     }
     ctx.fillStyle = options.backgroundColor;
     ctx.strokeStyle = options.borderColor;
-    drawArc(ctx, me, radiusOffset);
-    drawBorder(ctx, me, radiusOffset);
+    const endAngle = drawArc(ctx, me, radiusOffset);
+    drawBorder(ctx, me, radiusOffset, endAngle);
     ctx.restore();
   }
 }
@@ -11618,7 +11618,7 @@ CategoryScale.defaults = {
 function generateTicks$1(generationOptions, dataRange) {
   const ticks = [];
   const MIN_SPACING = 1e-14;
-  const {step, min, max, precision, count, maxTicks, maxDigits, includeBounds} = generationOptions;
+  const {bounds, step, min, max, precision, count, maxTicks, maxDigits, includeBounds} = generationOptions;
   const unit = step || 1;
   const maxSpaces = maxTicks - 1;
   const {min: rmin, max: rmax} = dataRange;
@@ -11639,8 +11639,13 @@ function generateTicks$1(generationOptions, dataRange) {
     factor = Math.pow(10, precision);
     spacing = Math.ceil(spacing * factor) / factor;
   }
-  niceMin = Math.floor(rmin / spacing) * spacing;
-  niceMax = Math.ceil(rmax / spacing) * spacing;
+  if (bounds === 'ticks') {
+    niceMin = Math.floor(rmin / spacing) * spacing;
+    niceMax = Math.ceil(rmax / spacing) * spacing;
+  } else {
+    niceMin = rmin;
+    niceMax = rmax;
+  }
   if (minDefined && maxDefined && step && almostWhole((max - min) / step, spacing / 1000)) {
     numSpaces = Math.min((max - min) / spacing, maxTicks);
     spacing = (max - min) / numSpaces;
@@ -11770,6 +11775,7 @@ class LinearScaleBase extends Scale {
     maxTicks = Math.max(2, maxTicks);
     const numericGeneratorOptions = {
       maxTicks,
+      bounds: opts.bounds,
       min: opts.min,
       max: opts.max,
       precision: tickOpts.precision,
