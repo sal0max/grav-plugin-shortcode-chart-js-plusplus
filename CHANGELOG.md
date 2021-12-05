@@ -1,3 +1,9 @@
+# v1.0.16
+##  12/05/2021
+
+1. [](#improved)
+   * updated Chart.js from 3.6.1 to [3.6.2](https://github.com/chartjs/Chart.js/releases/tag/v3.6.2)
+
 # v1.0.15
 ##  12/05/2021
 
