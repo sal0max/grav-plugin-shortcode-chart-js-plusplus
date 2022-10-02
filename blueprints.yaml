@@ -1,7 +1,7 @@
 name: Shortcode Chart.js++
 slug: shortcode-chart-js-plusplus
 type: plugin
-version: 1.0.19
+version: 1.0.20
 description: A shortcodes extension to add Chart.js charts to your Grav website.
 icon: code
 author:
