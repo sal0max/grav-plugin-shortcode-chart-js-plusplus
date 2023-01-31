@@ -176,6 +176,9 @@ class ChartShortcode extends Shortcode
             else if ($value === "true" || $value === "false") {
                 $result .= "$key: $value,\n";
             }
+            else if ($this->startsWith($value, '{')) {
+                $result .= "$key: $value,\n
+            }
             // strings
             else {
                 $result .= "$key: '$value',\n";
